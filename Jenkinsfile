@@ -1,4 +1,5 @@
 node(){
 stage 'build'
-git checkout master
+git url: "https://github.com/acura0408/test.git"
+
 }
