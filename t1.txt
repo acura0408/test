@@ -1,0 +1,269 @@
+import wlstModule
+from java.io import File
+from java.io import FileInputStream
+from java.util import Properties
+
+properties = FileInputStream("C:\\Users\\sankumar\\Desktop\\test.properties")
+pro = Properties()
+pro.load(properties)
+##test = pro.get("url")
+print ("printing the values-->"+pro.get('url'))
+def connectAdmin() :
+    try:
+        connect("weblogic","weblogic123","t3://172.16.175.28:7001")
+		# state('Server')
+        print('connect successfully')
+    except:
+        print('unable to connect'+usr)
+        exit()
+##############################
+def startedit():
+    print "Entering Edit mode"
+    edit()
+    startEdit()
+##############################
+def saveing():
+    print "Entering save mode"
+    save()
+    activate(block='true')
+    disconnect()
+##############################
+def jta():
+    cd('/JTA/domain')
+    cmo.setTimeoutSeconds(900)
+    print 'updating jta timeout'
+##############################
+def filestore():
+    filestorenames = pro.get('filestore')
+    filestore = filestorenames.split('|')
+    print "printing the values in filestore====>" +str(filestore)
+    for filestorename in filestore:
+        print "printing the values in filestore====<<<" +filestorename
+        if cmo.lookupFileStore(filestorename) is None:
+            print "Creating filestore----->"+filestorename
+            cmo.createFileStore(filestorename)
+            cd('/FileStores/' +filestorename)
+            cmo.setDirectory("FileStore1")
+            cmo.addTarget(getMBean("/Servers/AdminServer"))
+        else:
+            print 'file store already exists========' +filestorename
+##################################
+def saffilestore():
+    filestorename = "saffilestore"
+##    cd ('/')
+    if cmo.lookupFileStore(filestorename) is None:
+        cmo.createFileStore(filestorename)
+        cd('/FileStores/' +filestorename)
+        cmo.setDirectory("FileStore1")
+        cmo.addTarget(getMBean("/Servers/AdminServer"))
+       
+    else:
+        print 'file store already exists========' +filestorename
+##################################
+def safagent():
+    safagent = "safagent1"
+    filestorename = "saffilestore"
+##    cd ('/')
+    if cmo.lookupSAFAgent(safagent) is None:
+        cmo.createSAFAgent(safagent)
+        cd('/SAFAgents/' +safagent)
+        print "printing file store name----->" +filestorename
+        cmo.setStore(getMBean('/FileStores/'+filestorename))
+        cmo.setServiceType('Sending-only')
+        cmo.addTarget(getMBean("/Servers/AdminServer"))     
+    else:
+        print 'file store already exists========' +safagent
+##################################
+def jmsserver():
+    jmsserver = "jmsserver1322"
+    filestorename = "filestore412653143"
+    if cmo.lookupJMSServer(jmsserver) is None:
+        startedit()
+        print("creating jmsserver" +jmsserver)
+        cmo.createJMSServer(jmsserver)
+        cd('/JMSServers/' +jmsserver)
+        print "printing file store name----->" +filestorename
+        cmo.setPersistentStore(getMBean('/FileStores/'+filestorename))
+        cmo.addTarget(getMBean('/Servers/AdminServer'))
+        saveing()
+    else:
+        print 'jmsserver already exists#########' +jmsserver
+        cd('/JMSServers/' +jmsserver)
+        cmo.setMessageBufferSize(9223372036)
+
+##############################
+def jmsmodule():
+    jmsmodule = 'earyhj', 'rburhj'
+    jmsmodulesubdeployment = "jmsmodulesubdeplo21yment5"
+##    jmsserver = "jmsserver1322"
+    cd('/JMSServers')
+    jmsserver=ls(returnMap='true')
+    for i in jmsmodule:
+        if cmo.lookupJMSSystemResource((str(i))) is None:
+            print("creating jmsmodule====>" +i)
+            cmo.createJMSSystemResource(i)
+            cd('/JMSSystemResources/'+i)
+            cmo.addTarget(getMBean('/Servers/AdminServer'))
+            cmo.createSubDeployment(jmsmodulesubdeployment)
+            cd('/JMSSystemResources/'+i+'/SubDeployments/' +jmsmodulesubdeployment)
+            print "creating jmsmodule====+++++>" +(str(jmsserver))
+            list=[]
+            for j in jmsserver:
+                sub='com.bea:Name='+j+',Type=JMSServer'
+                list.append(ObjectName(str(sub)))
+                print ("bfewglew"+sub)
+                print ("bfewglew====================>"+(str(list)))
+                set('Targets',jarray.array(list, ObjectName))
+                print 'Creating Queue'
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i)
+                print("creating jmsmodule====>" +i)
+                cmo.createQueue('testqueue')
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i+'/Queues/testqueue')
+                set('JNDIName','jms/testqueue')
+                set('SubDeploymentName','jmsmodulesubdeplo21yment5')
+                cd('/JMSSystemResources/'+i+'/SubDeployments/'+jmsmodulesubdeployment)
+##                set('Targets',jarray.array(list, ObjectName))
+                print 'Creating topic'
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i)
+                print("creating jmsmodule====>" +i)
+                cmo.createTopic('testtopic')
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i+'/Topics/testtopic')
+                set('JNDIName','jms/testtopic')
+                set('SubDeploymentName','jmsmodulesubdeplo21yment5')
+                cd('/JMSSystemResources/'+i+'/SubDeployments/'+jmsmodulesubdeployment)
+##                set('Targets',jarray.array(list, ObjectName))
+                print 'Creating distributed queue'
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i)
+                cmo.createUniformDistributedQueue('testqueue1')
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i+'/UniformDistributedQueues/testqueue1')
+                set('JNDIName','jms/testtopi2c')
+                set('SubDeploymentName','jmsmodulesubdeplo21yment5')
+                print 'Creating distributed topic'
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i)
+                cmo.createUniformDistributedTopic('testtopic1')
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i+'/UniformDistributedTopics/testtopic1')
+                set('JNDIName','jms/testtopic1')
+                set('SubDeploymentName','jmsmodulesubdeplo21yment5')
+                print 'Creating SAF Context'
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i)
+                cmo.createSAFRemoteContext('SAFcontext')
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i+'/SAFRemoteContexts/SAFcontext/SAFLoginContext/SAFcontext')
+                cmo.setLoginURL('t3://172.168.0.32:7001')
+                cmo.setUsername('weblogic')
+                cmo.setPassword('weblogic123')
+                print 'Creating SAFImportedDestinations'
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i)
+                cmo.createSAFImportedDestinations('SAFcontext12')
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i+'/SAFImportedDestinations/SAFcontext12')
+                cmo.setSAFRemoteContext(getMBean('/JMSSystemResources/'+i+'/JMSResource/'+i+'/SAFRemoteContexts/SAFcontext'))
+                cmo.setJNDIPrefix('weblogic')
+                cmo.setSAFErrorHandling(None)
+                cmo.setUseSAFTimeToLiveDefault(false)
+                cmo.createSAFQueue('sample')
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i+'/SAFImportedDestinations/SAFcontext12/SAFQueues/sample')
+                cmo.setRemoteJNDIName('jms/sample')
+                cmo.setUseSAFTimeToLiveDefault(true)
+##                set('JNDIName','SAFcontext')
+##                set('SubDeploymentName','jmsmodulesubdeplo21yment5')
+                
+        else:
+            print 'jmsmodule already exists ^^^^^' +i
+                        cd('/JMSSystemResources/'+i+'/JMSResource/'+i)
+            cmo.createForeignServer('testforeign1')
+            cd('/JMSSystemResources/'+i+'/JMSResource/'+i+'/ForeignServers/testforeign1')
+            cmo.setConnectionURL('t3://test')
+            cmo.setDefaultTargetingEnabled(false)
+            set('SubDeploymentName','jmsmodulesubdeplo21yment5')
+            print "created foreign server"
+            cmo.createForeignConnectionFactory('testconnectionfactory')
+            cd('/JMSSystemResources/'+i+'/JMSResource/'+i+'/ForeignServers/testforeign1/ForeignConnectionFactories/testconnectionfactory')
+            cmo.setLocalJNDIName('eteytey')
+            cmo.setRemoteJNDIName('yeyeue')
+            print "creted foreign jms server"
+            cd('/JMSSystemResources/'+i+'/JMSResource/'+i)
+            if cmo.lookupConnectionFactory('testconfac11') is None:
+                print "creating new"
+                cmo.createConnectionFactory('testconfac11')
+                cd('/JMSSystemResources/'+i+'/JMSResource/'+i+'/ConnectionFactories/testconfac11')
+                cmo.setJNDIName('rge21')
+                set('SubDeploymentName','jmsmodulesubdeplo21yment5')
+            else:
+                print "+++++++++++++++++???already exists"
+
+#################################
+def sec():
+    print 'releam======================>'
+    realmName = "myrealm"
+    domainName = "medrec"
+    ldap = "testldap"
+    cd('/SecurityConfiguration/' +domainName)
+##    if cmo.lookupRealm(realmName) is None:
+    print("releam doesn't exists")
+    cd('/SecurityConfiguration/' + domainName + '/Realms/' + realmName)
+    cmo.createAuthenticationProvider(ldap,'weblogic.security.providers.authentication.OpenLDAPAuthenticator')
+    cd('/SecurityConfiguration/' + domainName + '/Realms/' + realmName + '/AuthenticationProviders/' + ldap)
+    cmo.setControlFlag('OPTIONAL')
+    cmo.setPrincipal('sa.to')
+##        cmo.createRealm('sa')
+##        cmo.setdefaultproviders(true)
+##    else:
+##        cmo.createRealm('sa')
+    print 'releam already exists'
+#################################
+def sec1():
+    print 'releam======================>'
+    relm = "myrealm"
+    cd('/SecurityConfiguration/medrec')
+    cmo.setClearTextCredentialAccessEnabled(true)
+    cmo.setConnectionLoggerEnabled(true)
+##    cmo.setConnectionFilter('weblogic.security.net.ConnectionFilterImpl')
+    cmo.setConnectionFilterRules([String('127.0.2.3 7001 allow t3s https'),String('127.44.23.33 7001 allow t3s https')])
+##String('192.168.100.0/255.255.254.0 127.0.0.1 7001 allow')], String)
+    cd('/Log/medrec')
+    cmo.setRotationType('byTime')
+#################################
+def main():
+    connectAdmin()
+    if len(sys.argv) > 1:
+        choice = sys.argv[1]
+        startedit()
+    else:
+        correct()
+    if choice == 'filestore':
+        filestore()
+    elif choice == 'jmsserver':
+        jmsserver()
+    elif choice == 'saffilestore':
+        saffilestore()
+    elif choice == 'safagent':
+        safagent()
+    elif choice == 'jmsmodule':
+        jmsmodule()
+    elif choice == 'sec':
+        sec1()
+    elif choice == 'jta':
+        jta()
+    elif choice == 'all':
+        filestore()
+        jmsserver()
+    saveing()
+##    activate()
+##    disconnect()
+####################################
+##if __name__=="main":     
+##    print ("connect to domain")
+##    connectAdmin()
+##    edit()
+##    # StartEdit()
+##	# state("AdminServer", 'Server')
+####    filestore()
+##    msserver()
+##    save()
+##    activate()
+##    disconnect()
+################################
+def correct():
+    print """correct:
+    wlst """+sys.argv[0] +""" filestore | msserver | all"""
+    exit()
+main()
